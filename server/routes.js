@@ -68,17 +68,20 @@ router.get('/modify/:id/:name', function(req, res) {
 });
 
 router.get('/replace/:toReplace/:id/:name', function(req, res) {
-    if (store.resources.length > req.params.toReplace) {
+    console.log(store.resources.length);
+    console.log(req.params.toReplace);
+    if (store.resources.length <= req.params.toReplace) {
         res.json("No resource at: " + req.params.toReplace);
     }
     else {
-        store.resources[toReplace] = {
+        store.resources[req.params.toReplace] = {
             "id": req.params.id,
             "name": req.params.name,
         };
-        res.json(store.resources[toReplace]);
+        res.json(store.resources[req.params.toReplace]);
     }
 })
+
 router.get('/delete/:id', function(req, res) {
     let info = store.resources.find(value => value.id === req.params.id);
     if (info === undefined) {
