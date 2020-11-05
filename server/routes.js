@@ -2,14 +2,13 @@ const Router = require('express').Router;
 const router = Router();
 
 const store = {
-    resources: {
-        res_id: { name: 'xx' }
-    }
+    resources: [
+        { id: "0", name: "roman" },
+        { id: "1", name: "coco" },
+        { id: "2", name: "anto" }
+    ]
 };
 
-/*
-get /api/resources/res_id -> renvoi la resource store.resources['res_id']
-*/
 /*
 Exercice:
 
@@ -27,14 +26,69 @@ Contraintes:
     _> ajoute, get, modifie, get, et supprime la ressource.
 */
 
-router.get('/resources/:id', (req, res) => {
-    const idx = req.params.id;
-    console.log("toto : " + idx);
-    console.log(req.params);
-    const { params: { id }} = req;
-    console.log(id);
-    console.log("***\n");
-    res.send('id : ' + idx);
+router.get('/', function(req, res, next) {
+    res.json(store.resources);
+});
+
+router.get('/:id', function(req, res) {
+    let info = store.resources.find(value => value.id === req.params.id);
+    if (info === undefined) {
+        res.json("No user at: " + req.params.id);
+    }
+    else {
+        res.json(info);
+    }
+});
+
+router.get('/create/:id/:name', function(req, res) {
+    let info = store.resources.find(value => value.id === req.params.id)
+    if (info === undefined) {
+        let newObject = {
+            "id": req.params.id,
+            "name": req.params.name,
+        };
+        store.resources.push(newObject);
+        res.json(newObject);
+    }
+    else {
+        res.json("An user is already existing at " + req.params.id);
+    }
+});
+
+router.get('/modify/:id/:name', function(req, res) {
+    let info = store.resources.find(value => value.id === req.params.id);
+    if (info === undefined) {
+        res.json("No user at: " + req.params.id);
+    }
+    else {
+        const index = store.resources.indexOf(info);
+        store.resources[index].name = req.params.name;
+        res.json(info);
+    }
+});
+
+router.get('/replace/:toReplace/:id/:name', function(req, res) {
+    if (store.resources.length > req.params.toReplace) {
+        res.json("No resource at: " + req.params.toReplace);
+    }
+    else {
+        store.resources[toReplace] = {
+            "id": req.params.id,
+            "name": req.params.name,
+        };
+        res.json(store.resources[toReplace]);
+    }
+})
+router.get('/delete/:id', function(req, res) {
+    let info = store.resources.find(value => value.id === req.params.id);
+    if (info === undefined) {
+        res.json("No user at: " + req.params.id);
+    }
+    else {
+        let index = store.resources.indexOf(info);
+        store.resources.splice(index, 1);
+        res.json(store.resources);
+    }
 });
 
 module.exports = router;
