@@ -6,6 +6,7 @@ function printReq(req, res, next) {
         params,
         body
     });
+    console.log();
     next();
 }
 

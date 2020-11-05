@@ -3,9 +3,9 @@ const router = Router();
 
 const store = {
     resources: [
-        { id: "0", name: "roman" },
-        { id: "1", name: "coco" },
-        { id: "2", name: "anto" }
+        { id: 0, name: "roman" },
+        { id: 1, name: "coco" },
+        { id: 2, name: "anto" }
     ]
 };
 
@@ -29,20 +29,16 @@ Contraintes:
 //#region GET
 
 router.get('/', function(req, res, next) {
-    console.log("get called!");
     res.json(store.resources);
-    return store.resources;
 });
 
 router.get('/:id', function(req, res) {
-    console.log("get by id called!");
     let info = store.resources.find(value => value.id === req.params.id);
     if (info === undefined) {
-        res.json("No user at: " + req.params.id);
+        res.status(404).json();
     }
     else {
         res.json(info);
-        return info;
     }
 });
 
@@ -111,7 +107,19 @@ router.post('/', (req, res) => {
     data.id = store.resources.length; // auto incremented id
     store.resources.push(data);
     res.json(data);
-    return data;
+});
+
+router.put('/', (req, res) => {
+    const userID = req.body.id;
+    const user = store.resources.find(usr => usr.id === userID)
+    if (user === undefined) {
+        res.status(404).json();
+    }
+    else {
+        const id = store.resources.indexOf(user);
+        store.resources.splice(id, 1);
+        res.json( { success: true } );
+    }
 });
 
 module.exports = router;
