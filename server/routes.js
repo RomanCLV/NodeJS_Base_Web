@@ -29,16 +29,20 @@ Contraintes:
 //#region GET
 
 router.get('/', function(req, res, next) {
+    console.log("get called!");
     res.json(store.resources);
+    return store.resources;
 });
 
 router.get('/:id', function(req, res) {
+    console.log("get by id called!");
     let info = store.resources.find(value => value.id === req.params.id);
     if (info === undefined) {
         res.json("No user at: " + req.params.id);
     }
     else {
         res.json(info);
+        return info;
     }
 });
 
@@ -106,6 +110,8 @@ router.post('/', (req, res) => {
     const data = req.body;
     data.id = store.resources.length; // auto incremented id
     store.resources.push(data);
+    res.json(data);
+    return data;
 });
 
 module.exports = router;
