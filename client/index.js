@@ -1,13 +1,18 @@
 const axios = require("axios");
+const { put } = require("../server/routes");
 
 const urlApi = "http://localhost:3000/api/";
 
 async function main() {
+    await addUser({name: "roro"});
+    await addUser({name: "anto"});
+    await getById(1);
     await getAll();
-    //await getById(0);
-    //await addUser({name: "bryan"});
-    //await getAll();
-    await putUserById(1);
+    await putUserById(1, { id: 1, name: "coach"});
+    await getAll();
+    await patchUserById(1, {id: 11, pseudo: "le goulag"});
+    await getAll();
+    await deleteUserById(0);
     await getAll();
 }
 
@@ -47,8 +52,8 @@ async function addUser(user) {
         });
 }
 
-async function putUserById(id) {
-    await axios.put(urlApi, { id })
+async function putUserById(id, user) {
+    await axios.put(urlApi + id, user)
         .then(data => {
             console.log("PUT BY ID - Success:");
             console.log(data.data);
@@ -56,6 +61,30 @@ async function putUserById(id) {
         })
         .catch(err => {
             console.log("PUT BY ID - Error: " + err.response.status + "\n");
+        });
+}
+
+async function patchUserById(id, user) {
+    await axios.patch(urlApi + id, user)
+        .then(data => {
+            console.log("PATCH BY ID - Success:");
+            console.log(data.data);
+            console.log();
+        })
+        .catch(err => {
+            console.log("PATCH BY ID - Error: " + err.response.status + "\n");
+        });
+}
+
+async function deleteUserById(id) {
+    await axios.delete(urlApi + id)
+        .then(data => {
+            console.log("DELETE BY ID - Success:");
+            console.log(data.data);
+            console.log();
+        })
+        .catch(err => {
+            console.log("DELETE BY ID - Error: " + err.response.status + "\n");
         });
 }
 

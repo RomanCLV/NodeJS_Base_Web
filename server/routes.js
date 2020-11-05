@@ -1,23 +1,16 @@
 const Router = require('express').Router;
 const router = Router();
-
-const store = {
-    resources: [
-        { id: 0, name: "roman" },
-        { id: 1, name: "coco" },
-        { id: 2, name: "anto" }
-    ]
-};
+const store = require('./store');
 
 /*
 Exercice:
 
 4 Routes
-- 1) recuperer un objet avec son ID
-- 2) creer un objet 
-- 3) replace une resource avec son ID
-- 4) patch une resource avec son ID
-- 5) delete une resource son ID
+- 1) recuperer un objet avec son ID     GET
+- 2) creer un objet                     POST
+- 3) replace une resource avec son ID   PUT
+- 4) patch une resource avec son ID     PATCH
+- 5) delete une resource son ID         DELETE
 ----------------------------------------
 
 Contraintes:
@@ -26,100 +19,58 @@ Contraintes:
     _> ajoute, get, modifie, get, et supprime la ressource.
 */
 
-//#region GET
+/*
 
-router.get('/', function(req, res, next) {
-    res.json(store.resources);
-});
+La méthode GET est utilisée pour récupérer les données du serveur. Il s'agit d'une méthode en lecture seule, elle ne présente donc aucun risque de mutation ou de corruption des données. Par exemple, si nous appelons la méthode get sur notre API, nous récupérerons une liste de toutes les tâches à effectuer.
+La méthode POST envoie des données au serveur et crée une nouvelle ressource. La ressource qu'il crée est subordonnée à une autre ressource parent. Lorsqu'une nouvelle ressource est POSTÉE au parent, le service API associera automatiquement la nouvelle ressource en lui attribuant un ID (nouvel URI de ressource). En bref, cette méthode est utilisée pour créer une nouvelle entrée de données.
+La méthode DELETE est utilisée pour supprimer une ressource spécifiée par son URI.
+La méthode PUT est le plus souvent utilisée pour mettre à jour une ressource existante. Si vous souhaitez mettre à jour une ressource spécifique (fournie avec un URI spécifique), vous pouvez appeler la méthode PUT vers cet URI de ressource avec le corps de la requête contenant la nouvelle version complète de la ressource que vous essayez de mettre à jour.
+La méthode PATCH est très similaire à la méthode PUT car elle modifie également une ressource existante. La différence est que pour la méthode PUT, le corps de la requête contient la nouvelle version complète, tandis que pour la méthode PATCH, le corps de la requête n'a besoin que de contenir les modifications spécifiques apportées à la ressource, en particulier un ensemble d'instructions décrivant comment cette ressource doit être modifiée. , et le service API créera une nouvelle version conformément à cette instruction.
 
-router.get('/:id', function(req, res) {
-    let info = store.resources.find(value => value.id === req.params.id);
-    if (info === undefined) {
-        res.status(404).json();
-    }
-    else {
-        res.json(info);
-    }
-});
+*/
 
-//#region A ne pas faire
+// Enregistrer une route, methode GET, url /resources/ID_RESOURCE
+// Recuperer une ressource avec son id
+router.get('/', (req, res) => {
+    res.json(store.resources.get());
+})
 
-// router.get('/create/:id/:name', function(req, res) {
-//     let info = store.resources.find(value => value.id === req.params.id)
-//     if (info === undefined) {
-//         let newObject = {
-//             "id": req.params.id,
-//             "name": req.params.name,
-//         };
-//         store.resources.push(newObject);
-//         res.json(newObject);
-//     }
-//     else {
-//         res.json("An user is already existing at " + req.params.id);
-//     }
-// });
+router.get('/:id', (req, res) => {
+    const id = req.params.id;
+    res.json(store.resources.getById(id));
+})
 
-// router.get('/modify/:id/:name', function(req, res) {
-//     let info = store.resources.find(value => value.id === req.params.id);
-//     if (info === undefined) {
-//         res.json("No user at: " + req.params.id);
-//     }
-//     else {
-//         const index = store.resources.indexOf(info);
-//         store.resources[index].name = req.params.name;
-//         res.json(info);
-//     }
-// });
-
-// router.get('/replace/:toReplace/:id/:name', function(req, res) {
-//     console.log(store.resources.length);
-//     console.log(req.params.toReplace);
-//     if (store.resources.length <= req.params.toReplace) {
-//         res.json("No resource at: " + req.params.toReplace);
-//     }
-//     else {
-//         store.resources[req.params.toReplace] = {
-//             "id": req.params.id,
-//             "name": req.params.name,
-//         };
-//         res.json(store.resources[req.params.toReplace]);
-//     }
-// })
-
-// router.get('/delete/:id', function(req, res) {
-//     let info = store.resources.find(value => value.id === req.params.id);
-//     if (info === undefined) {
-//         res.json("No user at: " + req.params.id);
-//     }
-//     else {
-//         let index = store.resources.indexOf(info);
-//         store.resources.splice(index, 1);
-//         res.json(store.resources);
-//     }
-// });
-
-//#endregion
-
-//#endregion
-
+// Creer une nouvelle ressource
 router.post('/', (req, res) => {
-    const data = req.body;
-    data.id = store.resources.length; // auto incremented id
-    store.resources.push(data);
-    res.json(data);
-});
+    const resource = store.resources.add(req.body);
+    res.json(resource);
+})
 
-router.put('/', (req, res) => {
-    const userID = req.body.id;
-    const user = store.resources.find(usr => usr.id === userID)
-    if (user === undefined) {
-        res.status(404).json();
-    }
-    else {
-        const id = store.resources.indexOf(user);
-        store.resources.splice(id, 1);
-        res.json( { success: true } );
-    }
-});
+// remplacer une ressource
+router.put('/:id', (req, res) => {
+    const id = req.params.id;
+    if (id !== req.body.id)
+        return res.status(400).end();
+    const tryReplace = store.resources.replace(id, req.body);
+    if (!tryReplace)
+        res.status(404).end();
+    res.json(tryReplace);
+})
+
+// patch une ressource
+router.patch('/:id', (req, res) => {
+    const id = req.params.id;
+    const resource = store.resources.patch(id, req.body);
+    res.json(resource);
+})
+
+// supprimer
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    const tryDelete = store.resources.delete(id);
+    if (!tryDelete)
+        return res.status(404).end();
+    res.json({ success: tryDelete });
+})
 
 module.exports = router;
